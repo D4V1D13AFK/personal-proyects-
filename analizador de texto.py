@@ -1,9 +1,17 @@
 import tkinter as tk
+from langdetect import detect
+from iso639 import languages
+
+# Función para obtener el nombre del idioma a partir del código ISO 639-1
+def obtener_nombre_idioma(codigo_idioma):
+    try:
+        nombre_idioma = languages.get(part1=codigo_idioma).name
+        return nombre_idioma
+    except:
+        return "Desconocido"
 
 # Función para analizar el texto
 def analizar_texto():
-    palabras_excluidas = ["y", "o", "el", "la", "de", "en", "un", "una", "para","es"]
-    palabras_clave = []
     texto = texto_entrada.get("1.0", "end-1c")
     palabras = texto.split()  # Dividir el texto en palabras utilizando espacios en blanco como separadores
     num_palabras = len(palabras)  # Contar el número de palabras en el texto
@@ -13,29 +21,26 @@ def analizar_texto():
     # Ayuda a que se muestre el número de caracteres
     resultado_caracteres.config(text=f"Número de caracteres:{caracteres}")
     
-    # Crear un diccionario para almacenar la frecuencia de palabras
-    frecuencia_palabras = {}
+    # Conteo de párrafos
+    parrafos = texto.split("\n\n")  # Suponemos que los párrafos están separados por líneas en blanco
+    num_parrafos = len(parrafos)
+    # Mostrar el número de párrafos
+    resultado_parrafos.config(text=f"Número de párrafos: {num_parrafos}")
     
-    for palabra in palabras:
-        # Convertir la palabra a minúsculas para hacer la búsqueda insensible a mayúsculas
-        palabra = palabra.lower()
-        if palabra in palabras_excluidas:
-            continue
-        
-        # Si la palabra ya está en el diccionario, aumenta su frecuencia
-        if palabra in frecuencia_palabras:
-            frecuencia_palabras[palabra] += 1
-        else:
-            frecuencia_palabras[palabra] = 1
+    # Conteo de oraciones
+    oraciones = texto.split(".")  # Suponemos que una oración termina con un punto "."
+    num_oraciones = len(oraciones)
+    # Mostrar el número de oraciones
+    resultado_oraciones.config(text=f"Número de oraciones: {num_oraciones}")
     
-    # Buscar palabras clave (aquí se consideran aquellas que aparecen más de una vez)
-    for palabra, frecuencia in frecuencia_palabras.items():
-        if frecuencia > 1:
-            palabras_clave.append(palabra)
-    
-    # Mostrar el resultado de palabras clave
-    resultado_palabras_clave.config(text=f"Palabras clave: {', '.join(palabras_clave)}")
-    
+    # Detección de idioma
+    try:
+        codigo_idioma = detect(texto)
+        nombre_idioma = obtener_nombre_idioma(codigo_idioma)
+        resultado_idioma.config(text=f"Idioma detectado: {nombre_idioma}")
+    except:
+        resultado_idioma.config(text="No se pudo detectar el idioma.")
+
 # Crear la ventana de la aplicación
 ventana = tk.Tk()
 ventana.title("Herramienta de Análisis de Texto")
@@ -58,8 +63,12 @@ resultado_texto = tk.Label(ventana, text="")
 resultado_texto.pack()
 resultado_caracteres = tk.Label(ventana, text="")
 resultado_caracteres.pack()
-resultado_palabras_clave = tk.Label(ventana, text="")
-resultado_palabras_clave.pack()
+resultado_parrafos = tk.Label(ventana, text="")
+resultado_parrafos.pack()
+resultado_oraciones = tk.Label(ventana, text="")
+resultado_oraciones.pack()
+resultado_idioma = tk.Label(ventana, text="")
+resultado_idioma.pack()
 
 # Ejecutar la aplicación
 ventana.mainloop()
